@@ -21,6 +21,8 @@ type room struct {
 	clients map[*client]bool
 	// tracer will recive trace
 	tracer trace.Tracer
+	// avatar is how avatar information will be obtained
+	avatar Avatar
 }
 
 func (r *room) run() {
@@ -75,12 +77,13 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	client.read()
 }
 
-func newRoom() *room {
+func newRoom(avatar Avatar) *room {
 	return &room{
 		forward: make(chan *message),
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
 		tracer:  trace.Off(),
+		avatar:  avatar,
 	}
 }

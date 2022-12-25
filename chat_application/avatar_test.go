@@ -5,8 +5,8 @@ import "testing"
 func TestAuthAvatar(t *testing.T) {
 	var authAvatar AuthAvatar
 	client := new(client)
-	url, err := authAvatar.AvatarURL(client)
-	if err != nil {
+	url, err := authAvatar.GetAvatarURL(client)
+	if err != ErrNoAvatarURL {
 		t.Error("AuthAvatar.GetAvatarURL should return ErrNoAvatarURL when no value present")
 	}
 	testUrl := "http://url-to-gravatar/"

@@ -43,7 +43,7 @@ func main() {
 	gomniauth.WithProviders(
 		google.New(os.Getenv("CLIENT_ID"), os.Getenv("CLIENT_SECRET"), "http://localhost:8080/auth/callback/google"),
 	)
-	r := newRoom()
+	r := newRoom(UseAuthAvatar)
 	r.tracer = trace.New(os.Stdout)
 
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
