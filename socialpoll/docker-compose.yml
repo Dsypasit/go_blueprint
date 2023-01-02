@@ -1,0 +1,23 @@
+version: '3'
+services:
+  nsqlookupd:
+    image: nsqio/nsq
+    command: /nsqlookupd
+    ports:
+      - "4160:4160"
+      - "4161:4161"
+  nsqd:
+    image: nsqio/nsq
+    command:  /nsqd --broadcast-address=nsqd --lookupd-tcp-address=nsqlookupd:4160
+    depends_on:
+      - nsqlookupd
+    ports:
+      - "4151:4151"
+      - "4150:4150"
+  mongo:
+    image: mongo:4.4
+    command: mongod --dbpath /db
+    volumes:
+      - ./db:/db
+    ports:
+      - 27017:27017
