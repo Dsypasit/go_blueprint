@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/nsqio/go-nsq"
@@ -66,6 +68,21 @@ func main() {
 	if err := q.ConnectToNSQLookupd("localhost:4161"); err != nil {
 		fatal(err)
 		return
+	}
+
+	ticker := time.NewTicker(updateDuration)
+	termChan := make(chan os.Signal, 1)
+	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	for {
+		select {
+		case <-ticker.C:
+			doCount(&countsLock, &counts, pollData)
+		case <-termChan:
+			ticker.Stop()
+			q.Stop()
+		case <-q.StopChan:
+			return
+		}
 	}
 }
 

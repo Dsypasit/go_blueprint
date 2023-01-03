@@ -1,5 +1,5 @@
-env_up:
+up:
 	docker compose up -d
-env_down:
+down:
 	docker compose down
 
