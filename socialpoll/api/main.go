@@ -25,8 +25,9 @@ func main() {
 		db: db,
 	}
 	mux := http.NewServeMux()
-	mux.HandleFunc("/polls", withCORS(withAPIKey(s.HandlePolls)))
+	mux.HandleFunc("/polls/", withCORS(withAPIKey(s.HandlePolls)))
 	log.Println("Starting web server on", *addr)
+	http.ListenAndServe(*addr, mux)
 	log.Println("stopping")
 
 }

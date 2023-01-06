@@ -9,7 +9,7 @@ import (
 )
 
 type poll struct {
-	ID      bson.ObjectId  `json:"id" bson:"id"`
+	ID      bson.ObjectId  `json:"id" bson:"_id"`
 	Title   string         `json:"title"`
 	Options []string       `json:"options"`
 	Results map[string]int `json:"results"`
