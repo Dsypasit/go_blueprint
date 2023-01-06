@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"net/http"
+
+	"gopkg.in/mgo.v2"
 )
 
 func main() {
@@ -22,6 +24,10 @@ func APIKey(ctx context.Context) (string, bool) {
 
 func isValidAPIKey(key string) bool {
 	return key == "1234"
+}
+
+type Server struct {
+	db *mgo.Session
 }
 
 func withAPIKey(fn http.HandlerFunc) http.HandlerFunc {
