@@ -26,11 +26,11 @@ type googleResponse struct {
 }
 
 type googleGeometry struct {
-	googleLocation `json: location`
+	googleLocation `json:"location"`
 }
 
 type googleLocation struct {
-	Lat float64 `json:"late"`
+	Lat float64 `json:"lat"`
 	Lng float64 `json:"lng"`
 }
 
@@ -82,6 +82,7 @@ func (q *Query) find(types string) (*googleResponse, error) {
 	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 		return nil, err
 	}
+
 	return &response, nil
 }
 
@@ -103,9 +104,9 @@ func (q *Query) Run() []interface{} {
 				log.Println("No places found for", types)
 				return
 			}
-			for _, result := range response.Result {
-				for _, photo := range result.Photos {
-					photo.URL = "https://maps.googleapis.com/maps/api/place/phot?" +
+			for i, result := range response.Result {
+				for j, photo := range result.Photos {
+					response.Result[i].Photos[j].URL = "https://maps.googleapis.com/maps/api/place/photo?" +
 						"maxwidth=1000&photoreference=" + photo.PhotoRef +
 						"&key=" + APIKey
 				}
