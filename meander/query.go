@@ -3,26 +3,30 @@ package meander
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
+	"sync"
+	"time"
 )
 
 var APIKey string
 
 type Place struct {
-	*googleGeometry `json:"geometry"`
-	Name            string         `json:"name"`
-	Icon            string         `json:"icon"`
-	Photos          []*googlePhoto `json:"photos"`
-	Vicinity        string         `json:"vicinity"`
+	googleGeometry `json:"geometry"`
+	Name           string        `json:"name"`
+	Icon           string        `json:"icon"`
+	Photos         []googlePhoto `json:"photos"`
+	Vicinity       string        `json:"vicinity"`
 }
 
 type googleResponse struct {
-	Result []*Place `json:"results"`
+	Result []Place `json:"results"`
 }
 
 type googleGeometry struct {
-	*googleLocation `json: location`
+	googleLocation `json: location`
 }
 
 type googleLocation struct {
@@ -55,7 +59,7 @@ type Query struct {
 }
 
 func (q *Query) find(types string) (*googleResponse, error) {
-	u := "https://maps.googleapis.com/maps/api/place/nearbysearch/output?parameters"
+	u := "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
 	vals := make(url.Values)
 	vals.Set("location", fmt.Sprintf("%g %g", q.Lat, q.Lng))
 	vals.Set("radius", fmt.Sprintf("%d", q.Radius))
@@ -79,4 +83,39 @@ func (q *Query) find(types string) (*googleResponse, error) {
 		return nil, err
 	}
 	return &response, nil
+}
+
+func (q *Query) Run() []interface{} {
+	rand.Seed(time.Now().UnixNano())
+	var w sync.WaitGroup
+	var l sync.Mutex
+	places := make([]interface{}, len(q.Journey))
+	for i, r := range q.Journey {
+		w.Add(1)
+		go func(types string, i int) {
+			defer w.Done()
+			response, err := q.find(types)
+			if err != nil {
+				log.Println("Failed to find places:", err)
+				return
+			}
+			if len(response.Result) == 0 {
+				log.Println("No places found for", types)
+				return
+			}
+			for _, result := range response.Result {
+				for _, photo := range result.Photos {
+					photo.URL = "https://maps.googleapis.com/maps/api/place/phot?" +
+						"maxwidth=1000&photoreference=" + photo.PhotoRef +
+						"&key=" + APIKey
+				}
+			}
+			randI := rand.Intn(len(response.Result))
+			l.Lock()
+			places[i] = response.Result[randI]
+			l.Unlock()
+		}(r, i)
+	}
+	w.Wait()
+	return places
 }
